@@ -32,6 +32,14 @@ esac
 shift # past argument or value
 done
 
+if [ ! $ss_server ] || [ ! $ss_port ] || [ ! $ss_key ] || [ ! $ss_method ]; then
+    echo "Usuage"
+    exit
+else
+    echo "options ok"
+fi
+
+
 # download newest sslocal as socks server
 if [ ! -d "shadowsocks" ]; then
     git clone -b master https://github.com/shadowsocks/shadowsocks.git
@@ -42,8 +50,9 @@ python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m 
 
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
-curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw "$dt time_connect: %{time_connect} s\n$dt time_namelookup: %{time_namelookup} s\n$dt time_pretransfer: %{time_pretransfer} s\n$dt time_starttransfer: %{time_starttransfer} s\n$dt time_redirect: %{time_redirect} s\n$dt speed_download: %{speed_download} B/s\n$dt time_total: %{time_total} s\n\n" google.com > curl.result
-cat curl.result #| grep speed_download | awk '{print $2}'
+echo "TEST started at $dt" > curl.log
+curl --socks5-hostname 127.0.0.1:1080 -Lo curl.result -skw "$dt time_connect: %{time_connect} s\n$dt time_namelookup: %{time_namelookup} s\n$dt time_pretransfer: %{time_pretransfer} s\n$dt time_starttransfer: %{time_starttransfer} s\n$dt time_redirect: %{time_redirect} s\n$dt speed_download: %{speed_download} B/s\n$dt time_total: %{time_total} s\n\n" google.com >> curl.log
+cat curl.log #| grep speed_download | awk '{print $2}'
 
 
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
