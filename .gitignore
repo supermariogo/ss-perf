@@ -1,5 +1,7 @@
 *.swp
+*.pid
 *.result
 *.log
 shadowsocks/
 http*
+access*

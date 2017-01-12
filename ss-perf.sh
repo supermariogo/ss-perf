@@ -75,13 +75,13 @@ fi
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
 
+stat_log="stat.log"
 
 while :
 do
     dt=$(date '+%Y-%m-%d-%H:%M:%S')
-    stat_log="$dt-stat.log"
-    stat_result="$dt-stat.result"
     echo "TEST started at $dt" > $stat_log
+    stat_result="$dt-stat.result"
     echo "" > $stat_result
 
 
@@ -94,14 +94,13 @@ do
                 continue
             fi
             echo "visting $url"
-            curl --socks5-hostname 127.0.0.1:1080 -Lo $url -skw \
-                "
-                $dt $url time_connect: %{time_connect} s\n\
-                $dt $url time_namelookup: %{time_namelookup} s\n\
-                $dt $url time_pretransfer: %{time_pretransfer} s\n\
-                $dt $url time_starttransfer: %{time_starttransfer} s\n\
-                $dt $url time_redirect: %{time_redirect} s\n\
-                $dt $url speed_download: %{speed_download} B/s\n\
+            curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw
+                $dt $url time_connect: %{time_connect} s\n
+                $dt $url time_namelookup: %{time_namelookup} s\n
+                $dt $url time_pretransfer: %{time_pretransfer} s\n
+                $dt $url time_starttransfer: %{time_starttransfer} s\n
+                $dt $url time_redirect: %{time_redirect} s\n
+                $dt $url speed_download: %{speed_download} B/s\n
                 $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
         done < "webpage.list"
 
