@@ -64,10 +64,10 @@ fi
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
 
-stat_log="stat.log"
+stat_log="$stat.log"
 dt=$(date '+%Y-%m-%d-%H:%M:%S')
 echo "TEST started at $dt" > $stat_log
-stat_result="$dt-stat.result"
+stat_result="$dt-$ss_server-stat.result"
 echo "" > $stat_result
 
 
