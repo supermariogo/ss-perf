@@ -94,7 +94,8 @@ do
                 continue
             fi
             echo "visting $url"
-            curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw
+            curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
+                "
                 $dt $url time_connect: %{time_connect} s\n
                 $dt $url time_namelookup: %{time_namelookup} s\n
                 $dt $url time_pretransfer: %{time_pretransfer} s\n
