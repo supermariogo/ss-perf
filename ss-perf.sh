@@ -1,6 +1,6 @@
 function get_average {
     # $1 is the url
-    for key in "time_total" "speed_download"; do
+    for key in "speed_download" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
         average=$(cat $stat_log | grep $1 | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
         echo "$dt $1 $key $average" >> $stat_result
     done
@@ -105,7 +105,7 @@ do
 done < "webpage.list"
 
 #append total average
-for key in "time_total" "speed_download"; do
+for key in "speed_download" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
     average=$(cat $stat_log | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
     echo "$dt total_average $key $average" >> $stat_result
 done
