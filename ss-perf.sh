@@ -89,7 +89,7 @@ for i in $(seq $iteration);do
             $dt $url time_redirect: %{time_redirect} s\n
             $dt $url speed_download: %{speed_download} B/s\n
             $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
-    done < "webpage.list"
+    done < "workload.list"
 
 done
 
@@ -102,7 +102,7 @@ do
     fi
     echo "post-processing $url"
     get_average $url
-done < "webpage.list"
+done < "workload.list"
 
 #append total average
 for key in "speed_download" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
