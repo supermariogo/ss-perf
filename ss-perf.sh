@@ -1,8 +1,14 @@
 function get_average {
     # $1 is the url
-    for key in "speed_download" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
-        average=$(cat $stat_log | grep $1 | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
-        echo "$dt $1 $key $average" >> $stat_result
+    for type in "visit" "download"; do
+        for key in "speed" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
+            average=""
+            average=$(cat $stat_log | grep $1 | grep $type | grep $key | awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }')
+            if [ ! $average ] ; then
+                continue
+            fi
+            echo "$dt $ss_server $type $1 $key $average" >> $stat_result
+        done
     done
 }
 
@@ -73,41 +79,49 @@ echo "" > $stat_result
 
 for i in $(seq $iteration);do
 
-    while read -r url
+    while read -r line
     do
-        if [[ $url == "#"* ]];then
+        if [[ $line == "#"* ]];then
             # this url if commented out, skip
             continue
         fi
-        echo "visting $url"
+        line_array=($line)
+        url=${line_array[0]}
+        type=${line_array[1]}
+        echo "$type $url"
         curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
             "
-            $dt $url time_connect: %{time_connect} s\n
-            $dt $url time_namelookup: %{time_namelookup} s\n
-            $dt $url time_pretransfer: %{time_pretransfer} s\n
-            $dt $url time_starttransfer: %{time_starttransfer} s\n
-            $dt $url time_redirect: %{time_redirect} s\n
-            $dt $url speed_download: %{speed_download} B/s\n
-            $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
+            $dt $ss_server $type $url time_connect: %{time_connect} s\n
+            $dt $ss_server $type $url time_namelookup: %{time_namelookup} s\n
+            $dt $ss_server $type $url time_pretransfer: %{time_pretransfer} s\n
+            $dt $ss_server $type $url time_starttransfer: %{time_starttransfer} s\n
+            $dt $ss_server $type $url time_redirect: %{time_redirect} s\n
+            $dt $ss_server $type $url speed: %{speed_download} B/s\n
+            $dt $ss_server $type $url time_total: %{time_total} s\n\n" $url >> $stat_log
     done < "workload.list"
 
 done
 
 
-while read -r url
+while read -r line
 do
-    if [[ $url == "#"* ]];then
+    if [[ $line == "#"* ]];then
         # this url if commented out, skip
         continue
     fi
+    line_array=($line)
+    url=${line_array[0]}
+    type=${line_array[1]}
     echo "post-processing $url"
     get_average $url
 done < "workload.list"
 
 #append total average
-for key in "speed_download" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
-    average=$(cat $stat_log | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
-    echo "$dt total_average $key $average" >> $stat_result
+for type in "visit" "download"; do
+    for key in "speed" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
+        average=$(cat $stat_log | grep $type | grep $key | awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }')
+        echo "$dt $ss_server $type total_average $key $average" >> $stat_result
+    done
 done
 
 cat $stat_result
