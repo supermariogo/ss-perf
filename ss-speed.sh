@@ -1,8 +1,9 @@
 function get_average {
     # $1 is the url
-    for type in "visit" "download"; do
-        for key in "speed" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
+    for type in "ssvisit" "ssdownload"; do
+        for key in "speed_byte_per_second" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
             average=""
+            #cat $stat_log | grep $1 | grep $type | grep $key | awk '{print $6}'
             average=$(cat $stat_log | grep $1 | grep $type | grep $key | awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }')
             if [ ! $average ] ; then
                 continue
@@ -70,7 +71,7 @@ fi
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
 
-stat_log="$stat.log"
+stat_log="stat.log"
 dt=$(date '+%Y-%m-%d-%H:%M:%S')
 echo "TEST started at $dt" > $stat_log
 stat_result="$dt-$ss_server-stat.result"
@@ -96,7 +97,7 @@ for i in $(seq $iteration);do
             $dt $ss_server $type $url time_pretransfer: %{time_pretransfer} s\n
             $dt $ss_server $type $url time_starttransfer: %{time_starttransfer} s\n
             $dt $ss_server $type $url time_redirect: %{time_redirect} s\n
-            $dt $ss_server $type $url speed: %{speed_download} B/s\n
+            $dt $ss_server $type $url speed_byte_per_second: %{speed_download} B/s\n
             $dt $ss_server $type $url time_total: %{time_total} s\n\n" $url >> $stat_log
     done < "workload.list"
 
@@ -117,9 +118,13 @@ do
 done < "workload.list"
 
 #append total average
-for type in "visit" "download"; do
-    for key in "speed" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
+for type in "ssvisit" "ssdownload"; do
+    for key in "speed_byte_per_second" "time_total" "time_connect" "time_namelookup" "time_pretransfer" "time_starttransfer" "time_redirect"; do
+        average=""
         average=$(cat $stat_log | grep $type | grep $key | awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }')
+        if [ ! $average ] ; then
+            continue
+        fi
         echo "$dt $ss_server $type total_average $key $average" >> $stat_result
     done
 done
