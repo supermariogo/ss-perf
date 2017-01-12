@@ -30,16 +30,8 @@ case $key in
     ss_method="$2"
     shift # past argument
     ;;
-    -t|--interval)
-    interval="$2"
-    shift # past argument
-    ;;
     --iteration)
     iteration="$2"
-    shift # past argument
-    ;;
-    --email)
-    email="$2"
     shift # past argument
     ;;
     --default)
@@ -63,9 +55,6 @@ if [ ! $iteration ] ; then
     iteration=1
 fi
 
-if [ ! $interval ] ; then
-    interval=1 #second
-fi
 
 # download newest sslocal as socks server
 if [ ! -d "shadowsocks" ]; then
@@ -76,37 +65,13 @@ python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m 
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
 
 stat_log="stat.log"
-
-while :
-do
-    dt=$(date '+%Y-%m-%d-%H:%M:%S')
-    echo "TEST started at $dt" > $stat_log
-    stat_result="$dt-stat.result"
-    echo "" > $stat_result
+dt=$(date '+%Y-%m-%d-%H:%M:%S')
+echo "TEST started at $dt" > $stat_log
+stat_result="$dt-stat.result"
+echo "" > $stat_result
 
 
-    for i in $(seq $iteration);do
-
-        while read -r url
-        do
-            if [[ $url == "#"* ]];then
-                # this url if commented out, skip
-                continue
-            fi
-            echo "visting $url"
-            curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
-                "
-                $dt $url time_connect: %{time_connect} s\n
-                $dt $url time_namelookup: %{time_namelookup} s\n
-                $dt $url time_pretransfer: %{time_pretransfer} s\n
-                $dt $url time_starttransfer: %{time_starttransfer} s\n
-                $dt $url time_redirect: %{time_redirect} s\n
-                $dt $url speed_download: %{speed_download} B/s\n
-                $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
-        done < "webpage.list"
-
-    done
-
+for i in $(seq $iteration);do
 
     while read -r url
     do
@@ -114,21 +79,38 @@ do
             # this url if commented out, skip
             continue
         fi
-        echo "post-processing $url"
-        get_average $url
+        echo "visting $url"
+        curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
+            "
+            $dt $url time_connect: %{time_connect} s\n
+            $dt $url time_namelookup: %{time_namelookup} s\n
+            $dt $url time_pretransfer: %{time_pretransfer} s\n
+            $dt $url time_starttransfer: %{time_starttransfer} s\n
+            $dt $url time_redirect: %{time_redirect} s\n
+            $dt $url speed_download: %{speed_download} B/s\n
+            $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
     done < "webpage.list"
 
-    #append total average
-    for key in "time_total" "speed_download"; do
-        average=$(cat $stat_log | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
-        echo "$dt total_average $key $average" >> $stat_result
-    done
-
-    cat $stat_result
-    sleep $interval
 done
 
 
+while read -r url
+do
+    if [[ $url == "#"* ]];then
+        # this url if commented out, skip
+        continue
+    fi
+    echo "post-processing $url"
+    get_average $url
+done < "webpage.list"
+
+#append total average
+for key in "time_total" "speed_download"; do
+    average=$(cat $stat_log | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
+    echo "$dt total_average $key $average" >> $stat_result
+done
+
+cat $stat_result
 
 
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
