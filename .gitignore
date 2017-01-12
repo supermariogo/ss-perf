@@ -1,3 +1,5 @@
+*.swp
 *.result
 *.log
 shadowsocks/
+http*

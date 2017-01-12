@@ -1,8 +1,8 @@
 function get_average {
     # $1 is the url
     for key in "time_total" "speed_download"; do
-        average=$(cat stat.log | grep $1 | grep $key | awk '{ sum += $5; n++ } END { if (n > 0) print sum / n; }')
-        echo "$dt $1 $key $average" >> stat.result
+        average=$(cat $stat_log | grep $1 | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
+        echo "$dt $1 $key $average" >> $stat_result
     done
 }
 
@@ -30,12 +30,16 @@ case $key in
     ss_method="$2"
     shift # past argument
     ;;
-    --interval)
+    -t|--interval)
     interval="$2"
     shift # past argument
     ;;
     --iteration)
     iteration="$2"
+    shift # past argument
+    ;;
+    --email)
+    email="$2"
     shift # past argument
     ;;
     --default)
@@ -56,11 +60,11 @@ else
 fi
 
 if [ ! $iteration ] ; then
-    iteration=5
+    iteration=1
 fi
 
 if [ ! $interval ] ; then
-    interval=10 #min
+    interval=1 #second
 fi
 
 
@@ -74,9 +78,12 @@ python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m 
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
 
 
-dt=$(date '+%d/%m/%Y %H:%M:%S');
-echo "TEST started at $dt" > stat.log
-echo "" > stat.result
+dt=$(date '+%Y-%m-%d-%H:%M:%S')
+stat_log="$dt-stat.log"
+stat_result="$dt-stat.result"
+echo "TEST started at $dt" > $stat_log
+echo "" > $stat_result
+
 
 for i in $(seq $iteration);do
 
@@ -87,7 +94,7 @@ for i in $(seq $iteration);do
             continue
         fi
         echo "visting $url"
-        curl --socks5-hostname 127.0.0.1:1080 -Lo curl.result -skw \
+        curl --socks5-hostname 127.0.0.1:1080 -Lo $url -skw \
             "
             $dt $url time_connect: %{time_connect} s\n\
             $dt $url time_namelookup: %{time_namelookup} s\n\
@@ -95,7 +102,7 @@ for i in $(seq $iteration);do
             $dt $url time_starttransfer: %{time_starttransfer} s\n\
             $dt $url time_redirect: %{time_redirect} s\n\
             $dt $url speed_download: %{speed_download} B/s\n\
-            $dt $url time_total: %{time_total} s\n\n" $url >> stat.log
+            $dt $url time_total: %{time_total} s\n\n" $url >> $stat_log
     done < "webpage.list"
 
 done
@@ -113,11 +120,12 @@ done < "webpage.list"
 
 #append total average
 for key in "time_total" "speed_download"; do
-    average=$(cat stat.log | grep $key | awk '{ sum += $5; n++ } END { if (n > 0) print sum / n; }')
-    echo "$dt total_average $key $average" >> stat.result
+    average=$(cat $stat_log | grep $key | awk '{ sum += $4; n++ } END { if (n > 0) print sum / n; }')
+    echo "$dt total_average $key $average" >> $stat_result
 done
 
-cat stat.result
+cat $stat_result
+
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
 
 
