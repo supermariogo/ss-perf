@@ -124,7 +124,7 @@ for type in "visit" "download"; do
     done
 done
 
-cat $stat_result
+cat $stat_result | grep total_average
 
 
 python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
