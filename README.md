@@ -1,5 +1,5 @@
 ## Shadowsocks 速度测试
-####测试与统计shadowsocks服务器的简单脚本
+####测试与统计shadowsocks服务器速度的简单脚本
 
 ###简单使用:
 
