@@ -37,10 +37,6 @@ case $key in
     ss_method="$2"
     shift # past argument
     ;;
-    --iteration)
-    iteration="$2"
-    shift # past argument
-    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -56,10 +52,6 @@ if [ ! $ss_server ] || [ ! $ss_port ] || [ ! $ss_key ] || [ ! $ss_method ]; then
     exit
 else
     echo "options ok"
-fi
-
-if [ ! $iteration ] ; then
-    iteration=1
 fi
 
 
@@ -78,30 +70,26 @@ stat_result="$dt-$ss_server-stat.result"
 echo "" > $stat_result
 
 
-for i in $(seq $iteration);do
-
-    while read -r line
-    do
-        if [[ $line == "#"* ]];then
-            # this url if commented out, skip
-            continue
-        fi
-        line_array=($line)
-        url=${line_array[0]}
-        type=${line_array[1]}
-        echo "$type $url"
-        curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
-            "
-            $dt $ss_server $type $url time_connect: %{time_connect} s\n
-            $dt $ss_server $type $url time_namelookup: %{time_namelookup} s\n
-            $dt $ss_server $type $url time_pretransfer: %{time_pretransfer} s\n
-            $dt $ss_server $type $url time_starttransfer: %{time_starttransfer} s\n
-            $dt $ss_server $type $url time_redirect: %{time_redirect} s\n
-            $dt $ss_server $type $url speed_byte_per_second: %{speed_download} B/s\n
-            $dt $ss_server $type $url time_total: %{time_total} s\n\n" $url >> $stat_log
-    done < "workload.list"
-
-done
+while read -r line
+do
+    if [[ $line == "#"* ]];then
+        # this url if commented out, skip
+        continue
+    fi
+    line_array=($line)
+    url=${line_array[0]}
+    type=${line_array[1]}
+    echo "$type $url"
+    curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
+        "
+        $dt $ss_server $type $url time_connect: %{time_connect} s\n
+        $dt $ss_server $type $url time_namelookup: %{time_namelookup} s\n
+        $dt $ss_server $type $url time_pretransfer: %{time_pretransfer} s\n
+        $dt $ss_server $type $url time_starttransfer: %{time_starttransfer} s\n
+        $dt $ss_server $type $url time_redirect: %{time_redirect} s\n
+        $dt $ss_server $type $url speed_byte_per_second: %{speed_download} B/s\n
+        $dt $ss_server $type $url time_total: %{time_total} s\n\n" $url >> $stat_log
+done < "workload.list"
 
 
 while read -r line
