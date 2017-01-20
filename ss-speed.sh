@@ -116,11 +116,15 @@ for type in "ssvisit" "ssdownload"; do
         echo "$dt $ss_server $type total_average $key $average" >> $stat_result
     done
 done
+echo "--------$ss_server----------"
+echo -n "URL Access Time: "
+cat $stat_result | grep 'ssvisit total_average time_total' | awk '{print $6}'
+echo -n "Download Speed(Byte/s): "
+cat $stat_result | grep 'ssdownload total_average speed_byte_per_second' | awk '{print $6}'
+echo ""
 
-cat $stat_result | grep total_average
 
-
-python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
+python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop > /dev/null
 
 
 
