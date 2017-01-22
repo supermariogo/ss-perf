@@ -4,7 +4,7 @@
 ###简单使用:
 
 ```shell
-./ss-speed.sh -s tn1.instvpn.net -p XXXX -k YYYYY -m rc4-md5
+./ss-speed.sh -s instvpn.net -p XXXX -k YYYYY -m rc4-md5
 ```
 
 ###程序流程:
