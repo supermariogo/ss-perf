@@ -80,7 +80,7 @@ do
     url=${line_array[0]}
     type=${line_array[1]}
     echo "$type $url"
-    curl --socks5-hostname 127.0.0.1:10800 -Lo /dev/null -skw \
+    curl --socks5-hostname 127.0.0.1:10800 -# -Lo /dev/null -kw \
         "
         $dt $ss_server $type $url time_connect: %{time_connect} s\n
         $dt $ss_server $type $url time_namelookup: %{time_namelookup} s\n
