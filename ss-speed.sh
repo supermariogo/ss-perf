@@ -60,8 +60,8 @@ if [ ! -d "shadowsocks" ]; then
     git clone -b master https://github.com/shadowsocks/shadowsocks.git
 fi
 
-python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop
-python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d start
+python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method -l 10800 --pid ss.pid --log-file ss.log -d stop
+python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method -l 10800 --pid ss.pid --log-file ss.log -d start
 
 stat_log="stat.log"
 dt=$(date '+%Y-%m-%d-%H:%M:%S')
@@ -80,7 +80,7 @@ do
     url=${line_array[0]}
     type=${line_array[1]}
     echo "$type $url"
-    curl --socks5-hostname 127.0.0.1:1080 -Lo /dev/null -skw \
+    curl --socks5-hostname 127.0.0.1:10800 -Lo /dev/null -skw \
         "
         $dt $ss_server $type $url time_connect: %{time_connect} s\n
         $dt $ss_server $type $url time_namelookup: %{time_namelookup} s\n
@@ -124,7 +124,7 @@ cat $stat_result | grep 'ssdownload total_average speed_byte_per_second' | awk '
 echo ""
 
 
-python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method --pid ss.pid --log-file ss.log -d stop > /dev/null
+python shadowsocks/shadowsocks/local.py -s $ss_server -p $ss_port -k $ss_key -m $ss_method -l 10800 --pid ss.pid --log-file ss.log -d stop > /dev/null
 
 
 
