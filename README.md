@@ -35,3 +35,6 @@ for server in `ls *.result | awk -F'-' '{print $5}' | sort | uniq`; do
     printf "%18s %18s %18s\n" $server $download $response
 done;
 ```
+
+###Next:
+高并发速度测试。
