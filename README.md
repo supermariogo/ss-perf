@@ -8,9 +8,8 @@
 ```
 
 ###程序流程:
-- 检查当前目前是否有shadowsocks，如果没有git clone
-- 开启shadowsocks local port
-- 通过curl --socks-hostname 对workload.list中url进行访问，有ssvisit和ssdownload两种type
+- 开启shadowsocks local port 10800
+- 通过curl --socks-hostname 对workload.list中url进行访问。(分ssvisit和ssdownload两种type)
 - 对ssvisit和ssdownload分别进行统计
 - 关闭shadowsocks local
 
